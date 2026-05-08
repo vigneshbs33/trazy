@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { UserPlus, Trash2, MapPin, Navigation, Compass } from 'lucide-react';
-import { Traveler } from '../../types/travel';
+import { UserPlus, Trash2, Navigation, Compass } from 'lucide-react';
+import type { Traveler } from '../../types/travel';
 
 interface MergeFormProps {
   onSearch: (destination: string, travelers: Traveler[]) => void;

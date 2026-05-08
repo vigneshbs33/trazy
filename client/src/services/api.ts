@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { RouteOption, MergePointResponse, Traveler } from '../types/travel';
+import type { RouteOption, MergePointResponse, Traveler } from '../types/travel';
 
 const API_URL = import.meta.env.DEV ? 'http://localhost:3001/api' : '/api';
 

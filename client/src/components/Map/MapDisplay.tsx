@@ -1,5 +1,5 @@
 import React from 'react';
-import { Map, Marker, useMap } from '@vis.gl/react-google-maps';
+import { Map, Marker } from '@vis.gl/react-google-maps';
 
 interface MapDisplayProps {
   center?: { lat: number, lng: number };

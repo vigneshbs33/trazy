@@ -1,6 +1,6 @@
 import React from 'react';
-import { RouteOption } from '../../types/travel';
-import { Clock, Banknote, Star, ArrowRight, MapPin } from 'lucide-react';
+import type { RouteOption } from '../../types/travel';
+import { Clock, Banknote, Star, MapPin } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
 interface RouteResultsProps {

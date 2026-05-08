@@ -30,6 +30,8 @@ dist/
 build/
 coverage/
 .cache/
+client/test-results/
+client/playwright-report/
 
 # Runtime files
 *.pid

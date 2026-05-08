@@ -21,6 +21,8 @@ steps:
       - '--platform'
       - 'managed'
       - '--allow-unauthenticated'
+      - '--set-env-vars'
+      - 'FRONTEND_URL=https://trazy.app,PORT=8080'
 
 images:
   - 'gcr.io/$PROJECT_ID/trazy'

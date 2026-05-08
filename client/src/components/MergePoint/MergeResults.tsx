@@ -1,5 +1,5 @@
 import React from 'react';
-import { MergePointResponse } from '../../types/travel';
+import type { MergePointResponse } from '../../types/travel';
 import { MapPin, Info, Car, Timer, IndianRupee } from 'lucide-react';
 
 interface MergeResultsProps {

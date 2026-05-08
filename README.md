@@ -26,9 +26,11 @@ Calculates the geographically optimal junction for multiple travelers from diffe
 1. Clone the repository.
 2. Create a `.env` file in the root:
    ```env
-   GOOGLE_GENERIC_AI_KEY=your_gemini_key
-   VITE_GOOGLE_MAPS_API_KEY=your_maps_key
-   PORT=3001
+   GEMINI_API_KEY=your_gemini_key
+   GOOGLE_MAPS_API_KEY=your_server_maps_key
+   VITE_MAPS_PUBLIC_KEY=your_browser_restricted_maps_js_key
+   FRONTEND_URL=http://localhost:5173
+   PORT=8080
    ```
 3. Install dependencies:
    ```bash
