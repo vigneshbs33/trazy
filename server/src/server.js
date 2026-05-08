@@ -6,57 +6,69 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname  = path.dirname(__filename);
 
-// Load .env — try two common CWD positions
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
-if (!process.env.GEMINI_API_KEY && !process.env.GOOGLE_GENERIC_AI_KEY) {
-  dotenv.config({ path: path.resolve(process.cwd(), '../.env') });
+// ── Load .env ─────────────────────────────────────────────────────────────────
+// Possible locations (dev: repo root, prod: /app/.env next to server)
+const envPaths = [
+  path.resolve(__dirname, '../.env'),   // /app/.env  ← production container
+  path.resolve(__dirname, '../../.env'), // repo root  ← local dev
+];
+for (const p of envPaths) {
+  const result = dotenv.config({ path: p });
+  if (!result.error) { console.log(`[env] loaded from ${p}`); break; }
 }
 
 import planRoute from './routes/planRoute.js';
 
 const app = express();
 
-// ─── Security headers ────────────────────────────────────────────────────────
+// ── Security headers ──────────────────────────────────────────────────────────
 app.use(helmet({ contentSecurityPolicy: false }));
 
-// ─── CORS — locked to explicit origins ───────────────────────────────────────
-const rawOrigins = process.env.FRONTEND_URL || '';
+// ── CORS ───────────────────────────────────────────────────────────────────────
+const rawOrigins   = process.env.FRONTEND_URL || '';
 const allowedOrigins = rawOrigins
   ? rawOrigins.split(',').map(o => o.trim())
-  : ['http://localhost:5173', 'http://127.0.0.1:5173'];
+  : ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:5174'];
 
 app.use(cors({
   origin: (origin, cb) => {
-    // Allow server-to-server / curl (no Origin header)
-    if (!origin) return cb(null, true);
-    if (allowedOrigins.includes(origin)) return cb(null, true);
-    cb(new Error(`CORS: origin "${origin}" not in allowlist`));
+    if (!origin) return cb(null, true); // same-origin / curl / server-to-server
+    if (allowedOrigins.some(o => origin.startsWith(o))) return cb(null, true);
+    cb(new Error(`CORS: "${origin}" not allowed`));
   },
   optionsSuccessStatus: 200,
 }));
 
-// Limit body size — prevents oversized payload attacks
+// ── Body limit ────────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10kb' }));
 
-// ─── API routes ──────────────────────────────────────────────────────────────
+// ── API routes ────────────────────────────────────────────────────────────────
 app.use('/api/plan-route', planRoute);
 
-// ─── Serve frontend build (production) ───────────────────────────────────────
-const publicPath = path.join(__dirname, '..', 'public');
-app.use(express.static(publicPath));
+// ── Serve Vite build ──────────────────────────────────────────────────────────
+// /app/public in production, or the nearest 'public' folder in dev
+const publicPath = path.resolve(__dirname, '../public');
+app.use(express.static(publicPath, { maxAge: '1d', etag: true }));
 
-// Wildcard ONLY for non-API paths — prevents catching /api/* routes
-app.get(/^(?!\/api).*$/, (_req, res) => {
-  res.sendFile(path.join(publicPath, 'index.html'));
+// SPA fallback — serve index.html for any non-API, non-asset route
+app.get('*', (req, res, next) => {
+  // Let real static assets 404 instead of falling back to index.html
+  if (req.path.startsWith('/assets/') || req.path.startsWith('/favicon')) {
+    return next();
+  }
+  const idx = path.join(publicPath, 'index.html');
+  res.sendFile(idx, (err) => {
+    if (err) res.status(404).send('Not found');
+  });
 });
 
-// ─── Start ───────────────────────────────────────────────────────────────────
+// ── Start ─────────────────────────────────────────────────────────────────────
 const PORT = parseInt(process.env.PORT || '8080', 10);
-
-app.listen(PORT, () => {
-  console.log(`\n🚀 Trazy server running on port ${PORT}`);
-  console.log(`   Mode:    ${process.env.NODE_ENV || 'development'}`);
-  console.log(`   Origins: ${allowedOrigins.join(', ')}\n`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`\n🚀 Trazy  port=${PORT}  env=${process.env.NODE_ENV || 'dev'}`);
+  console.log(`   Gemini key present : ${Boolean(process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERIC_AI_KEY)}`);
+  console.log(`   Maps server key    : ${Boolean(process.env.GOOGLE_MAPS_SERVER_KEY || process.env.VITE_GOOGLE_MAPS_API_KEY)}`);
+  console.log(`   Static files from  : ${publicPath}\n`);
 });
