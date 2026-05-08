@@ -46,3 +46,16 @@ venv/
 # Misc
 tmp/
 temp/
+
+# Local agent / skill tooling
+skills-lock.json
+.agents/cache/
+.agents/plugins/
+.codex/
+.gemini/
+
+# Local skill outputs and generated artifacts
+.agents/skills/**/dist/
+.agents/skills/**/build/
+.agents/skills/**/.cache/
+.agents/skills/**/node_modules/
